@@ -1,2 +1,5 @@
 *.dwb
 *.hex
+*.map
+*.elf
+*.o
