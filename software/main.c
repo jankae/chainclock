@@ -6,18 +6,18 @@
 #define BLUE_HIGH()		(PORTD |= (1<<PD5))
 #define BLUE_LOW()		(PORTD &= ~(1<<PD5))
 
-#define PINK_HIGH()		(PORTB |= (1<<PB2))
-#define PINK_LOW()		(PORTB &= ~(1<<PB2))
+#define PINK_HIGH()		(PORTD |= (1<<PD4))
+#define PINK_LOW()		(PORTD &= ~(1<<PD4))
 
-#define ORANGE_HIGH()		(PORTB |= (1<<PB3))
-#define ORANGE_LOW()		(PORTB &= ~(1<<PB3))
+#define ORANGE_HIGH()		(PORTD |= (1<<PD1))
+#define ORANGE_LOW()		(PORTD &= ~(1<<PD1))
 
-#define YELLOW_HIGH()		(PORTB |= (1<<PB4))
-#define YELLOW_LOW()		(PORTB &= ~(1<<PB4))
+#define YELLOW_HIGH()		(PORTD |= (1<<PD0))
+#define YELLOW_LOW()		(PORTD &= ~(1<<PD0))
 
-// counter for the motor steps
-// 1019/15 steps per minute needed
-// needed rotations*15 -> 1019 of this per minute
+/* counter for the motor steps */
+/* 1019/15 steps per minute needed */
+/* needed rotations*15 -> 1019 of this per minute */
 uint16_t neededRotations15;
 
 uint8_t minuteParts;
@@ -101,48 +101,50 @@ void moveOneMinute(void) {
 	minuteFlag = 0;
 	uint8_t additionalRotations = neededRotations15 / 15;
 	neededRotations15 -= additionalRotations * 15;
-	// enable analog comparator for detecting low battery
+	/* enable analog comparator for detecting low battery */
 	ACSR &= ~(1 << ACD);
-	// select bandgap reference
+	/* select bandgap reference */
 	ACSR |= (1 << ACBG);
-	// enable voltage divider
-	PORTD &= ~(1 << PD4);
+	/* enable voltage divider */
+	PORTD &= ~(1 << PD3);
 	while (additionalRotations > 0) {
 		moveStep();
 		waitms(5);
 		additionalRotations--;
 	}
 	if (ACSR & (1 << ACO)) {
-		// bandgap (1.1V) is higher than battery voltage after voltage divider
-		// -> battery low
+		/* bandgap (1.1V) is higher than battery voltage after voltage divider */
+		/* -> battery low */
 		batteryLow = 1;
 	}
 	stopMotor();
-	// disable ADC and voltage divider
-	PORTD |= (1 << PD4);
+	/* disable ADC and voltage divider */
+	PORTD |= (1 << PD3);
 	ACSR |= (1 << ACD);
 	ACSR &= ~(1 << ACBG);
 }
 
 int main(void) {
 	neededRotations15 = 0;
-	// disable analog comparator to save energy
+	/* disable analog comparator to save energy */
 	ACSR |= (1 << ACD);
-	DDRD = 0b00110000;
-	DDRB = 0b00011100;
-	// enable all pullups on unused pins
-	PORTD = ~0b00110000;
-	PORTB = ~0b00011110;
-	// disable voltage divider
-	PORTD |= (1 << PD4);
-	// disable digital input buffer on PB1 (AIN1)
+	/* Set motor pins at output */
+	DDRD |= 0b00110011;
+	/* Set voltage divider enable pin as output */	
+	DDRD |= 0b00001000;
+	/* enable all pullups on unused pins */
+	PORTD = 0b11000100;
+	PORTB = 0b11111101;
+	/* disable voltage divider */
+	PORTD |= (1 << PD3);
+	/* disable digital input buffer on PB1 (AIN1) */
 	DIDR |= (1 << AIN1D);
-	// configure timer 1 to use as wake-up call each minute
-	// prescaler = 64, CTC mode
-	OCR1A = 62499; // -> 15 compare matches per minute
+	/* configure timer 1 to use as wake-up call each minute */
+	/* prescaler = 64, CTC mode */
+	OCR1A = 62499; /* -> 15 compare matches per minute */
 	TCCR1B |= (1 << CS11) | (1 << CS10) | (1 << WGM12);
 	TIMSK |= (1 << OCIE1A);
-	// configure sleep mode
+	/* configure sleep mode */
 	set_sleep_mode(SLEEP_MODE_IDLE);
 	sei();
 	while (1) {
@@ -151,15 +153,15 @@ int main(void) {
 		if (minuteFlag)
 			moveOneMinute();
 		if (batteryLow) {
-			// battery voltage is too low
-			// -> disable all periphery and enter deep sleep mode
+			/* battery voltage is too low */
+			/* -> disable all periphery and enter deep sleep mode */
 			stopMotor();
 			TCCR1B = 0;
 			cli();
 			set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 			sleep_mode()
 			;
-			// should never reach this point
+			/* should never reach this point */
 			for (;;)
 				;
 		}
