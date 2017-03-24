@@ -14908,8 +14908,8 @@ www.irf.com&lt;p&gt;
 <part name="C4" library="rcl" deviceset="C-EU" device="C0603" value="100n"/>
 <part name="R5" library="resistor" deviceset="R-EU_" device="R0603" value="10k"/>
 <part name="GND3" library="supply1" deviceset="GND" device=""/>
-<part name="R6" library="resistor" deviceset="R-EU_" device="R0603" value="100"/>
-<part name="R7" library="resistor" deviceset="R-EU_" device="R0603" value="100"/>
+<part name="R6" library="resistor" deviceset="R-EU_" device="R0603" value="5k6"/>
+<part name="R7" library="resistor" deviceset="R-EU_" device="R0603" value="10k"/>
 <part name="C5" library="rcl" deviceset="C-EU" device="C0603" value="100n"/>
 <part name="GND4" library="supply1" deviceset="GND" device=""/>
 <part name="P+4" library="supply1" deviceset="VCC" device=""/>
