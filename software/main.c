@@ -109,7 +109,7 @@ void moveOneMinute(void) {
 	PORTD &= ~(1 << PD3);
 	while (additionalRotations > 0) {
 		moveStep();
-		waitms(5);
+		waitms(1);
 		additionalRotations--;
 	}
 	if (ACSR & (1 << ACO)) {
